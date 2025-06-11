@@ -1,20 +1,16 @@
 const Task = require("../models/Task");
 
-// ─────────────────────────────────────────────
-// GET /api/tasks - Obtener todas las tareas
-// ─────────────────────────────────────────────
+// GET /api/tasks
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const tasks = await Task.find({ userId: req.user._id });
     res.status(200).json(tasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// ─────────────────────────────────────────────
-// GET /api/tasks/:id - Obtener una tarea por ID
-// ─────────────────────────────────────────────
+// GET /api/tasks/:id
 exports.getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -25,49 +21,63 @@ exports.getTaskById = async (req, res) => {
   }
 };
 
-// ─────────────────────────────────────────────
-// POST /api/tasks - Crear una nueva tarea
-// ─────────────────────────────────────────────
+// POST /api/tasks
 exports.createTask = async (req, res) => {
-  const { goalId, title, completed, dueDate } = req.body;
+  const { title, goalId, dueDate } = req.body;
 
   if (!title || !goalId) {
-    return res.status(400).json({ message: "Title and goalId are required" });
+    return res
+      .status(400)
+      .json({ message: "Título y goalId son obligatorios" });
   }
 
   try {
-    const newTask = new Task({ goalId, title, completed, dueDate });
+    const newTask = new Task({
+      userId: req.user._id,
+      title,
+      goalId,
+      dueDate,
+    });
+
     const savedTask = await newTask.save();
     res.status(201).json(savedTask);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// ─────────────────────────────────────────────
-// PUT /api/tasks/:id - Actualizar una tarea
-// ─────────────────────────────────────────────
+// PUT /api/tasks/:id
 exports.updateTask = async (req, res) => {
+  const { title, goalId } = req.body;
+
+  if (!title || !goalId) {
+    return res
+      .status(400)
+      .json({ message: "Título y goalId son obligatorios" });
+  }
+
   try {
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!updatedTask)
+
+    if (!updatedTask) {
       return res.status(404).json({ message: "Task not found" });
+    }
+
     res.status(200).json(updatedTask);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 };
 
-// ─────────────────────────────────────────────
-// DELETE /api/tasks/:id - Eliminar una tarea
-// ─────────────────────────────────────────────
+// DELETE /api/tasks/:id
 exports.deleteTask = async (req, res) => {
   try {
     const deleted = await Task.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Task not found" });
+
     res.status(200).json({ message: "Task deleted" });
   } catch (err) {
     res.status(500).json({ message: err.message });

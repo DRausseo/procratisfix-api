@@ -39,6 +39,7 @@ const goalsRoutes = require("./routes/goals");
 const tasksRoutes = require("./routes/tasks");
 const routinesRoutes = require("./routes/routines");
 const authRoutes = require("./routes/auth");
+const usersRoutes = require("./routes/user");
 
 // ─────────────────────────────────────────────────────────────
 // Registrar rutas
@@ -47,6 +48,7 @@ app.use("/api/goals", goalsRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/routines", routinesRoutes);
 app.use("/auth", authRoutes);
+app.use("/api/users", usersRoutes);
 
 // Ruta raíz de prueba
 app.get("/", (req, res) => {
